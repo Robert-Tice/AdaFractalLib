@@ -1,4 +1,3 @@
-with Ada.Streams; use Ada.Streams;
 with Ada.Synchronous_Barriers; use Ada.Synchronous_Barriers;
 
 with System;
@@ -30,21 +29,6 @@ private
 
    Real_Distance_Unzoomed : constant Real := To_Real (4);
 
-   task type Chunk_Task_Type is
-      pragma Priority (0);
-      entry Go (Start_Row : Natural;
-                Stop_Row  : Natural;
-                Buf       : Buffer_Access);
-   end Chunk_Task_Type;
-
-   type Chunk_Task is record
-      T : Chunk_Task_Type;
-      Start_Row : Natural;
-      Stop_Row  : Natural;
-   end record;
-
-   type Chunk_Task_Pool is array (1 .. Task_Pool_Size) of Chunk_Task;
-
    type Complex_Coordinate is record
       Re : Real;
       Im : Real;
@@ -59,9 +43,6 @@ private
    S_Max          : Complex_Coordinate;
    S_Min          : Complex_Coordinate;
 
-   S_Task_Pool : Chunk_Task_Pool;
-   S_Sync_Obj  : Synchronous_Barrier (Release_Threshold => Task_Pool_Size + 1);
-
    S_Frame_Counter : Color := Color'First;
    S_Cnt_Up        : Boolean := True;
 
@@ -73,8 +54,6 @@ private
    procedure Calculate_Bounds;
 
    procedure Calculate_Step;
-
-   procedure Update_Task_Rows;
 
    procedure Calculate_Pixel_Color (Z_Escape     : Real;
                                     Iter_Escape  : Natural;

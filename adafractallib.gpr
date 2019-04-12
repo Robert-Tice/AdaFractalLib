@@ -6,5 +6,20 @@ library project AdaFractalLib is
    for Object_Dir   use "obj";
    for Library_Dir  use "lib";
 
+   type Tasking_Type is
+     ("none", "ravenscar", "full");
+   Tasking_Build : Tasking_Type := external ("TASKING_TYPE", "full");
+
+   package Naming is
+      case Tasking_Build is
+         when "none" =>
+            for Implementation ("Fractal") use "fractal_no_tasking.body";
+         when "ravenscar" =>
+            for Implementation ("Fractal") use "fractal_ravenscar_tasking.body";
+         when "full" =>
+            for Implementation ("Fractal") use "fractal_full_tasking.body";
+      end case;
+   end Naming;
+
 end AdaFractalLib;
 

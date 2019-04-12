@@ -1,9 +1,3 @@
-with Ada.Exceptions;
-
-with Ada.Text_IO; use Ada.Text_IO;
-
-with GNAT.OS_Lib;
-
 package body Fractal is
 
    procedure Init (Viewport : Viewport_Info)
@@ -18,7 +12,6 @@ package body Fractal is
 
       Calculate_Bounds;
       Calculate_Step;
-      Update_Task_Rows;
    end Init;
 
    procedure Set_Size (Viewport : Viewport_Info)
@@ -33,11 +26,6 @@ package body Fractal is
 
       Calculate_Bounds;
       Calculate_Step;
-      Update_Task_Rows;
-
-      Put_Line ("Re:" & Image (S_Min.Re) & "," & Image (S_Max.Re) &
-                  " Im:" & Image (S_Min.Im) & "," & Image (S_Max.Im));
-      Put_Line ("Center:" & Image (S_Center.Re) & "," & Image (S_Center.Im));
    end Set_Size;
 
    function Get_Coordinate (X : ImgWidth;
@@ -50,20 +38,6 @@ package body Fractal is
       return Complex_Coordinate'(Re => Real_Coord,
                                  Im => Imag_Coord);
    end Get_Coordinate;
-
-   procedure Update_Task_Rows
-   is
-      Chunk_Size : constant Natural := S_Height / Task_Pool_Size;
-   begin
-      for I in S_Task_Pool'First .. S_Task_Pool'Last - 1 loop
-         S_Task_Pool (I).Start_Row := ImgHeight'First +
-           (I - S_Task_Pool'First) * Chunk_Size;
-         S_Task_Pool (I).Stop_Row := I * Chunk_Size;
-      end loop;
-      S_Task_Pool (S_Task_Pool'Last).Start_Row := ImgHeight'First +
-        (S_Task_Pool'Last - S_Task_Pool'First) * Chunk_Size;
-      S_Task_Pool (S_Task_Pool'Last).Stop_Row := S_Height;
-   end Update_Task_Rows;
 
    procedure Calculate_Bounds
    is
@@ -107,22 +81,15 @@ package body Fractal is
 
    procedure Calculate_Image (Buffer : not null Buffer_Access)
    is
-      Notified : Boolean;
    begin
 
-      for I in S_Task_Pool'First .. S_Task_Pool'Last loop
-         S_Task_Pool (I).T.Go (Start_Row => S_Task_Pool (I).Start_Row,
-                               Stop_Row  => S_Task_Pool (I).Stop_Row,
-                               Buf       => Buffer);
+      for I in 1 .. Get_Height loop
+         Calculate_Row (Y      => I,
+                        Idx    => Buffer'First +
+                          Buffer_Offset ((I - 1) *
+                                Get_Width * Pixel'Size / 8),
+                        Buffer => Buffer);
       end loop;
-
-      Wait_For_Release (The_Barrier => S_Sync_Obj,
-                        Notified    => Notified);
-
-   exception
-      when E : others =>
-         Put_Line (Ada.Exceptions.Exception_Information (E));
-         GNAT.OS_Lib.OS_Exit (-1);
    end Calculate_Image;
 
    procedure Calculate_Pixel_Color (Z_Escape     : Real;
@@ -205,35 +172,5 @@ package body Fractal is
          pragma Warnings (On);
       end loop;
    end Calculate_Row;
-
-   task body Chunk_Task_Type
-   is
-      Start   : Natural;
-      Stop    : Natural;
-      Buffer  : Buffer_Access;
-      Notified : Boolean;
-   begin
-
-      loop
-         accept Go (Start_Row : Natural;
-                    Stop_Row : Natural;
-                    Buf : Buffer_Access) do
-            Start := Start_Row;
-            Stop := Stop_Row;
-            Buffer := Buf;
-         end Go;
-
-         for I in Start .. Stop loop
-
-            Calculate_Row (Y      => I,
-                           Idx    => Buffer'First +
-                             Buffer_Offset ((I - 1) *
-                                   Get_Width * Pixel'Size / 8),
-                           Buffer => Buffer);
-         end loop;
-         Wait_For_Release (The_Barrier => S_Sync_Obj,
-                           Notified    =>  Notified);
-      end loop;
-   end Chunk_Task_Type;
 
 end Fractal;
