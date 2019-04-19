@@ -47,7 +47,7 @@ package Image_Types is
    type Buffer_Element is mod 2 ** Standard'Storage_Unit;
    type Buffer_Offset is new Long_Long_Integer;
    type Buffer_Array is array (Buffer_Offset range <>) of Buffer_Element;
-   type Buffer_Access is access Buffer_Array;
+   type Buffer_Access is access all Buffer_Array;
 
 
 end Image_Types;
