@@ -1,8 +1,9 @@
 with Computation_Type;
-with Image_Types; use Image_Types;
+with Image_Types;
 
 generic
    with package CT is new Computation_Type (<>);
+   with package IT is new Image_Types (<>);
    Escape_Threshold : CT.Real;
 package Julia_Set is
    use CT;

@@ -10,7 +10,7 @@ package body Julia_Set is
       Im_Mod : Real := Im;
    begin
 
-      for I in 1 .. Max_Iterations loop
+      for I in 1 .. IT.Max_Iterations loop
          declare
             ReS : constant Real := Re_Mod * Re_Mod;
             ImS : constant Real := Im_Mod * Im_Mod;
@@ -26,7 +26,7 @@ package body Julia_Set is
          end;
       end loop;
 
-      Iter_Escape := Max_Iterations;
+      Iter_Escape := IT.Max_Iterations;
       Z_Escape := Re_Mod * Re_Mod + Im_Mod * Im_Mod;
 
    end Calculate_Pixel;

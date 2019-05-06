@@ -3,10 +3,11 @@ with Ada.Synchronous_Barriers; use Ada.Synchronous_Barriers;
 with System;
 
 with Computation_Type;
-with Image_Types; use Image_Types;
+with Image_Types;
 
 generic
    with package CT is new Computation_Type (<>);
+   with package IT is new Image_Types (<>);
    with procedure Calculate_Pixel (Re          : CT.Real;
                                    Im          : CT.Real;
                                    Z_Escape    : out CT.Real;
@@ -14,6 +15,7 @@ generic
    Task_Pool_Size : Natural;
 package Fractal is
    use CT;
+   use IT;
 
    procedure Init (Viewport : Viewport_Info);
 
@@ -21,9 +23,13 @@ package Fractal is
 
    procedure Calculate_Image (Buffer : not null Buffer_Access);
 
-   procedure Increment_Frame;
+--   procedure Increment_Frame;
 
    function Get_Buffer_Size return Buffer_Offset;
+
+   procedure Calculate_Row (Y      : ImgHeight;
+                            Idx    : Buffer_Offset;
+                            Buffer : not null Buffer_Access);
 
 private
 
@@ -43,21 +49,16 @@ private
    S_Max          : Complex_Coordinate;
    S_Min          : Complex_Coordinate;
 
-   S_Frame_Counter : Color := Color'First;
+--   S_Frame_Counter : Color := Color'First;
    S_Cnt_Up        : Boolean := True;
-
-
-   procedure Calculate_Row (Y      : ImgHeight;
-                            Idx    : Buffer_Offset;
-                            Buffer : not null Buffer_Access);
 
    procedure Calculate_Bounds;
 
    procedure Calculate_Step;
 
-   procedure Calculate_Pixel_Color (Z_Escape     : Real;
-                                    Iter_Escape  : Natural;
-                                    Px           : out Pixel);
+--     procedure Calculate_Pixel_Color (Z_Escape     : Real;
+--                                      Iter_Escape  : Natural;
+--                                      Px           : out Pixel);
 
    function Get_Coordinate (X : ImgWidth;
                             Y : ImgHeight)
