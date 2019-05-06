@@ -50,7 +50,7 @@ private
    S_Min          : Complex_Coordinate;
 
 --   S_Frame_Counter : Color := Color'First;
-   S_Cnt_Up        : Boolean := True;
+--   S_Cnt_Up        : Boolean := True;
 
    procedure Calculate_Bounds;
 

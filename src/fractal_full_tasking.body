@@ -18,8 +18,8 @@ package body Fractal is
    S_Task_Pool : Chunk_Task_Pool;
    S_Sync_Obj  : Synchronous_Barrier (Release_Threshold => Task_Pool_Size + 1);
 
-   S_Frame_Counter : Color := Color'First;
-   S_Cnt_Up        : Boolean := True;
+ --  S_Frame_Counter : Color := Color'First;
+ --  S_Cnt_Up        : Boolean := True;
 
    procedure Update_Task_Rows
    is
@@ -134,58 +134,58 @@ package body Fractal is
 
    end Calculate_Image;
 
-   procedure Calculate_Pixel_Color (Z_Escape     : Real;
-                                    Iter_Escape  : Natural;
-                                    Px           : out Pixel)
-   is
-      Value : constant Integer := 765 * (Iter_Escape - 1) / Max_Iterations;
-   begin
-      if Z_Escape > To_Real (4) then
-         if Value > 510 then
-            Px := Pixel'(Red   => Color'Last - S_Frame_Counter,
-                         Green => Color'Last,
-                         Blue  => Color (Value rem Integer (Color'Last)),
-                         Alpha => Color'Last);
-         elsif Value > 255 then
-            Px := Pixel'(Red   => Color'Last - S_Frame_Counter,
-                         Green => Color (Value rem Integer (Color'Last)),
-                         Blue  => Color'First + S_Frame_Counter,
-                         Alpha => Color'Last);
-         else
-            Px := Pixel'(Red   => Color (Value rem Integer (Color'Last)),
-                         Green => Color'First + S_Frame_Counter,
-                         Blue  => Color'First,
-                         Alpha => Color'Last);
-         end if;
-      else
-         Px := Pixel'(Red   => Color'First + S_Frame_Counter,
-                      Green => Color'First + S_Frame_Counter,
-                      Blue  => Color'First + S_Frame_Counter,
-                      Alpha => Color'Last);
-      end if;
+--     procedure Calculate_Pixel_Color (Z_Escape     : Real;
+--                                      Iter_Escape  : Natural;
+--                                      Px           : out Pixel)
+--     is
+--        Value : constant Integer := 765 * (Iter_Escape - 1) / Max_Iterations;
+--     begin
+--        if Z_Escape > To_Real (4) then
+--           if Value > 510 then
+--              Px := Pixel'(Red   => Color'Last - S_Frame_Counter,
+--                           Green => Color'Last,
+--                           Blue  => Color (Value rem Integer (Color'Last)),
+--                           Alpha => Color'Last);
+--           elsif Value > 255 then
+--              Px := Pixel'(Red   => Color'Last - S_Frame_Counter,
+--                           Green => Color (Value rem Integer (Color'Last)),
+--                           Blue  => Color'First + S_Frame_Counter,
+--                           Alpha => Color'Last);
+--           else
+--              Px := Pixel'(Red   => Color (Value rem Integer (Color'Last)),
+--                           Green => Color'First + S_Frame_Counter,
+--                           Blue  => Color'First,
+--                           Alpha => Color'Last);
+--           end if;
+--        else
+--           Px := Pixel'(Red   => Color'First + S_Frame_Counter,
+--                        Green => Color'First + S_Frame_Counter,
+--                        Blue  => Color'First + S_Frame_Counter,
+--                        Alpha => Color'Last);
+--        end if;
+--
+--     end Calculate_Pixel_Color;
 
-   end Calculate_Pixel_Color;
-
-   procedure Increment_Frame
-   is
-   begin
-      if S_Cnt_Up then
-         if S_Frame_Counter = Color'Last then
-            S_Cnt_Up := not S_Cnt_Up;
-            return;
-         else
-            S_Frame_Counter := S_Frame_Counter + 5;
-            return;
-         end if;
-      end if;
-
-      if S_Frame_Counter = Color'First then
-         S_Cnt_Up := not S_Cnt_Up;
-         return;
-      end if;
-
-      S_Frame_Counter := S_Frame_Counter - 5;
-   end Increment_Frame;
+--     procedure Increment_Frame
+--     is
+--     begin
+--        if S_Cnt_Up then
+--           if S_Frame_Counter = Color'Last then
+--              S_Cnt_Up := not S_Cnt_Up;
+--              return;
+--           else
+--              S_Frame_Counter := S_Frame_Counter + 5;
+--              return;
+--           end if;
+--        end if;
+--
+--        if S_Frame_Counter = Color'First then
+--           S_Cnt_Up := not S_Cnt_Up;
+--           return;
+--        end if;
+--
+--        S_Frame_Counter := S_Frame_Counter - 5;
+--     end Increment_Frame;
 
    procedure Calculate_Row (Y      : ImgHeight;
                             Idx    : Buffer_Offset;
@@ -198,6 +198,8 @@ package body Fractal is
 
       Z_Esc : Real;
       I_Esc : Natural;
+
+      Escape_Threshold : Boolean;
    begin
       for X in Line'Range loop
          Coord := Get_Coordinate (X => X,
@@ -208,9 +210,14 @@ package body Fractal is
                           Iter_Escape => I_Esc);
 
          pragma Warnings (Off);
-         Calculate_Pixel_Color (Z_Escape    => Z_Esc,
-                                Iter_Escape => I_Esc,
-                                Px          => Line (X));
+         if Z_Esc > To_Real (4) then
+            Escape_Threshold := True;
+         else
+            Escape_Threshold := False;
+         end if;
+         IT.Color_Pixel (Z_Escape    => Escape_Threshold,
+                         Iter_Escape => I_Esc,
+                         Px          => Line (X));
          pragma Warnings (On);
       end loop;
    end Calculate_Row;
